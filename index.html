@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双人格斗游戏 - 拳皇风格</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+        padding: 0;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 游戏主界面 -->
+    <div id="game-container">
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas" width="1200" height="600"></canvas>
+        
+        <!-- UI界面层 -->
+        <div id="ui-layer">
+            <!-- 调试信息面板 -->
+            <div id="debug-panel" class="hidden">
+                <div class="debug-header">调试模式</div>
+                <div class="debug-section">
+                    <h4>玩家1</h4>
+                    <div class="debug-info">生命值: <span id="debug-p1-health"></span></div>
+                    <div class="debug-info">气力值: <span id="debug-p1-stamina"></span></div>
+                    <div class="debug-info">位置: <span id="debug-p1-pos"></span></div>
+                    <div class="debug-info">速度: <span id="debug-p1-vel"></span></div>
+                    <div class="debug-info">状态: <span id="debug-p1-state"></span></div>
+                    <div class="debug-info">连招序列: <span id="debug-p1-combo"></span></div>
+                    <div class="debug-info">冷却状态: <span id="debug-p1-cooldown"></span></div>
+                </div>
+                <div class="debug-section">
+                    <h4>玩家2</h4>
+                    <div class="debug-info">生命值: <span id="debug-p2-health"></span></div>
+                    <div class="debug-info">气力值: <span id="debug-p2-stamina"></span></div>
+                    <div class="debug-info">位置: <span id="debug-p2-pos"></span></div>
+                    <div class="debug-info">速度: <span id="debug-p2-vel"></span></div>
+                    <div class="debug-info">状态: <span id="debug-p2-state"></span></div>
+                    <div class="debug-info">连招序列: <span id="debug-p2-combo"></span></div>
+                    <div class="debug-info">冷却状态: <span id="debug-p2-cooldown"></span></div>
+                </div>
+                <div class="debug-footer">
+                    <span id="debug-fps">FPS: 60</span>
+                </div>
+            </div>
+
+            <!-- 玩家1生命值条 -->
+            <div class="health-bar player1-health">
+                <div class="health-fill" id="player1HealthFill"></div>
+                <span class="health-text">玩家1</span>
+            </div>
+            
+            <!-- 玩家1气力值条 -->
+            <div class="stamina-bar player1-stamina">
+                <div class="stamina-fill" id="player1StaminaFill"></div>
+                <span class="stamina-text">气力</span>
+            </div>
+            
+            <!-- 玩家2生命值条 -->
+            <div class="health-bar player2-health">
+                <div class="health-fill" id="player2HealthFill"></div>
+                <span class="health-text">玩家2</span>
+            </div>
+            
+            <!-- 玩家2气力值条 -->
+            <div class="stamina-bar player2-stamina">
+                <div class="stamina-fill" id="player2StaminaFill"></div>
+                <span class="stamina-text">气力</span>
+            </div>
+            
+            <!-- 暂停按钮 -->
+            <button id="pause-btn" class="pause-button">暂停</button>
+            
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="game-over-screen" class="hidden">
+            <div class="game-over-content">
+                <h2 id="winner-text">玩家1获胜！</h2>
+                <button id="restart-btn" class="restart-button">重新开始</button>
+            </div>
+        </div>
+
+        <!-- 教程页面 -->
+        <div id="tutorial-screen" class="hidden">
+            <div class="tutorial-content">
+                <h2>游戏教程</h2>
+
+                <div class="tutorial-section">
+                    <h3>玩家1（红色）- 左侧控制</h3>
+                    <ul>
+                        <li><strong>移动</strong>：← → 方向键</li>
+                        <li><strong>跳跃</strong>：↑ 方向键</li>
+                        <li><strong>拳攻击</strong>：小键盘 1</li>
+                        <li><strong>脚攻击</strong>：小键盘 2</li>
+                        <li><strong>防御</strong>：小键盘 3（减少50%伤害）</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>玩家2（青色）- 右侧控制</h3>
+                    <ul>
+                        <li><strong>移动</strong>：A / D 键</li>
+                        <li><strong>跳跃</strong>：W 键</li>
+                        <li><strong>拳攻击</strong>：Q 键</li>
+                        <li><strong>脚攻击</strong>：E 键</li>
+                        <li><strong>防御</strong>：S 键（减少50%伤害）</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>游戏规则</h3>
+                    <ul>
+                        <li>击败对手，将其生命值降至0</li>
+                        <li>按 <strong>空格键</strong> 可以暂停/恢复游戏</li>
+                        <li>按 <strong>P 键</strong> 可以随时查看教程</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>基础操作说明</h3>
+                    <ul>
+                        <li><strong>拳攻击</strong>：基础攻击，伤害10点，消耗5点气力</li>
+                        <li><strong>脚攻击</strong>：强力攻击，伤害15点，消耗15点气力</li>
+                        <li><strong>防御</strong>：减少50%受到的伤害，每秒消耗10点气力</li>
+                        <li><strong>跳跃</strong>：跳到空中躲避攻击，跳跃时恢复3点气力</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>气力值系统</h3>
+                    <ul>
+                        <li><strong>气力值</strong>：用于执行攻击和防御操作</li>
+                        <li><strong>消耗</strong>：拳攻击(-5)、脚攻击(-15)、防御(-10/秒)</li>
+                        <li><strong>恢复</strong>：移动(+5/秒)、静置(+10/秒)、跳跃(+3)</li>
+                        <li>气力值不足时无法攻击或防御</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>连招系统</h3>
+                    <ul>
+                        <li><strong>疾风连击</strong>（进攻）：拳→拳→腿 | 基础伤害+额外12 | 冷却5秒</li>
+                        <li><strong>雷霆重击</strong>（进攻）：腿→腿→拳 | 基础伤害+额外15 | 冷却6秒</li>
+                        <li><strong>气功疗伤</strong>（治疗）：跳跃中+拳 | 恢复20血量 | 冷却4.5秒</li>
+                        <li>连招需要在2秒内完成输入序列</li>
+                        <li>每个连招有独立的冷却时间</li>
+                        <li>连招伤害 = 基础攻击伤害 + 额外伤害</li>
+                    </ul>
+                </div>
+
+                <button id="tutorial-close-btn" class="tutorial-close-button">我明白了</button>
+            </div>
+        </div>
+
+        <!-- 触摸屏控制区域 -->
+        <div id="touch-controls">
+            <!-- 玩家1控制区域（左侧） -->
+            <div class="player-controls player1-controls">
+                <div class="control-layout">
+                    <div class="movement-area">
+                        <div class="direction-pad">
+                            <button class="control-btn up" data-action="jump" data-player="1">↑</button>
+                            <div class="horizontal-controls">
+                                <button class="control-btn left" data-action="left" data-player="1">←</button>
+                                <button class="control-btn right" data-action="right" data-player="1">→</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="control-btn punch" data-action="punch" data-player="1">拳</button>
+                        <button class="control-btn kick" data-action="kick" data-player="1">脚</button>
+                        <button class="control-btn defend" data-action="defend" data-player="1">防</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 玩家2控制区域（右侧） -->
+            <div class="player-controls player2-controls">
+                <div class="control-layout">
+                    <div class="movement-area">
+                        <div class="direction-pad">
+                            <button class="control-btn up" data-action="jump" data-player="2">↑</button>
+                            <div class="horizontal-controls">
+                                <button class="control-btn left" data-action="left" data-player="2">←</button>
+                                <button class="control-btn right" data-action="right" data-player="2">→</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="control-btn punch" data-action="punch" data-player="2">拳</button>
+                        <button class="control-btn kick" data-action="kick" data-player="2">脚</button>
+                        <button class="control-btn defend" data-action="defend" data-player="2">防</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="player.js"></script>
+    <script src="controls.js"></script>
+    <script src="game.js"></script>
+    <script>
+        // 游戏初始化
+        window.addEventListener('load', function() {
+            game.init();
+
+            // 暂停按钮事件监听
+            const pauseBtn = document.getElementById('pause-btn');
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', function() {
+                    if (game) {
+                        game.pause();
+                    }
+                });
+
+                // 触摸屏支持
+                pauseBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    if (game) {
+                        game.pause();
+                    }
+                });
+            }
+        });
+
+        // 防止页面滚动
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>

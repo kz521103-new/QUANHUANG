@@ -1,0 +1,789 @@
+/* 游戏主样式 */
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(45deg, #1a1a2e, #16213e);
+    overflow: visible;
+}
+
+/* 游戏画布 */
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #228B22 100%);
+    border: 2px solid #333;
+}
+
+/* UI层 */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 生命值条 */
+.health-bar {
+    position: absolute;
+    top: 20px;
+    width: 300px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #fff;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.player1-health {
+    left: 20px;
+}
+
+.player2-health {
+    right: 20px;
+}
+
+.health-fill {
+    height: 100%;
+    width: var(--health-percent, 100%);
+    transition: width 0.1s ease-out; /* 优化过渡动画 */
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+}
+
+.player2-health .health-fill {
+    background: linear-gradient(90deg, #f44336, #FF5722);
+}
+
+.health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    pointer-events: none;
+}
+
+/* 气力值条 */
+.stamina-bar {
+    position: absolute;
+    top: 58px;  /* 血条top(20px) + 血条height(30px) + 间距(8px) */
+    width: 240px;  /* 比血条短20% */
+    height: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #fff;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.player1-stamina {
+    left: 20px;
+}
+
+.player2-stamina {
+    right: 20px;
+}
+
+.stamina-fill {
+    height: 100%;
+    width: var(--stamina-percent, 100%);
+    transition: width 0.1s ease-out; /* 优化过渡动画 */
+    background: linear-gradient(90deg, #2196F3, #03A9F4);
+}
+
+.stamina-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    pointer-events: none;
+}
+
+/* 气力警告动画 */
+@keyframes stamina-warning {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* 暂停按钮 */
+.pause-button {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 40px;
+    background: linear-gradient(145deg, #4CAF50, #45a049);
+    border: 2px solid #fff;
+    border-radius: 20px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+    z-index: 20;
+}
+
+.pause-button:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.pause-button:active {
+    transform: translateX(-50%) translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.pause-button.paused {
+    background: linear-gradient(145deg, #FF9800, #F57C00);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
+    }
+}
+
+/* 触摸屏控制区域 */
+#touch-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 300px;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.player-controls {
+    position: absolute;
+    bottom: -18px;
+    width: 280px;
+    height: 260px;
+    pointer-events: auto;
+}
+
+.player1-controls {
+    left: 20px;
+}
+
+.player2-controls {
+    right: 20px;
+}
+
+/* 玩家2特定布局：功能键在左，方向键在右 */
+.player2-controls .control-layout {
+    flex-direction: row-reverse;
+}
+
+/* 控制布局容器 */
+.control-layout {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
+}
+
+/* 移动控制区域 */
+.movement-area {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+}
+
+.direction-pad {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.horizontal-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* 动作按钮区域 */
+.action-buttons {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* 控制按钮样式 */
+.control-btn {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    background: linear-gradient(145deg, #4a5568, #2d3748);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 不同类型按钮的颜色 */
+.control-btn.punch {
+    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+}
+
+.control-btn.kick {
+    background: linear-gradient(145deg, #4ecdc4, #44a08d);
+}
+
+.control-btn.defend {
+    background: linear-gradient(145deg, #45b7d1, #3742fa);
+}
+
+.control-btn.up {
+    background: linear-gradient(145deg, #f39c12, #e67e22);
+}
+
+.control-btn.left, .control-btn.right {
+    background: linear-gradient(145deg, #9b59b6, #8e44ad);
+}
+
+.control-btn.left {
+    width: 45px;
+    height: 45px;
+}
+
+.control-btn.right {
+    width: 45px;
+    height: 45px;
+}
+
+/* 按钮按下效果 */
+.control-btn.pressed {
+    transform: scale(0.9);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 16px;
+    }
+    
+    .control-btn.left, .control-btn.right {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .movement-area {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .direction-pad {
+        width: 140px;
+        height: 140px;
+    }
+}
+
+/* 游戏背景装饰 */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.cloud {
+    position: absolute;
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.8;
+    z-index: 1;
+}
+
+.cloud1 {
+    top: 50px;
+    left: 100px;
+    animation-delay: 0s;
+}
+
+.cloud2 {
+    top: 80px;
+    right: 150px;
+    animation-delay: 2s;
+}
+
+.cloud3 {
+    top: 30px;
+    left: 60%;
+    animation-delay: 4s;
+}
+
+/* 响应式设计 - 不同屏幕尺寸 */
+@media screen and (max-width: 1200px) {
+    .player-controls {
+        width: 240px;
+        height: 220px;
+        bottom: -18px;
+    }
+    
+    .movement-area {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .direction-pad {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .control-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 14px;
+    }
+    
+    .control-btn.left, .control-btn.right {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .control-layout {
+        gap: 2px;
+    }
+    
+    .horizontal-controls {
+        gap: 8px;
+        margin-top: 8px;
+    }
+    
+    .action-buttons {
+        gap: 6px;
+    }
+    
+    /* 确保玩家2在响应式布局下也保持功能键在左、方向键在右 */
+    .player2-controls .control-layout {
+        flex-direction: row-reverse;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .player-controls {
+        width: 200px;
+        height: 180px;
+        bottom: -28px;
+    }
+    
+    .player1-controls {
+        left: 10px;
+    }
+    
+    .player2-controls {
+        right: 10px;
+    }
+    
+    .movement-area {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .direction-pad {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .horizontal-controls {
+        gap: 6px;
+        margin-top: 6px;
+    }
+    
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 12px;
+    }
+    
+    .control-btn.left, .control-btn.right {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .action-buttons {
+        gap: 5px;
+    }
+    
+    .control-layout {
+        gap: 2px;
+    }
+    
+    /* 确保玩家2在中等屏幕下也保持功能键在左、方向键在右 */
+    .player2-controls .control-layout {
+        flex-direction: row-reverse;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .player-controls {
+        width: 160px;
+        height: 140px;
+    }
+    
+    .movement-area {
+        width: 75px;
+        height: 75px;
+    }
+    
+    .direction-pad {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .horizontal-controls {
+        gap: 5px;
+        margin-top: 5px;
+    }
+    
+    .control-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 10px;
+    }
+    
+    .control-btn.left, .control-btn.right {
+        width: 25px;
+        height: 25px;
+    }
+    
+    .action-buttons {
+        gap: 4px;
+    }
+    
+    .control-layout {
+        gap: 1px;
+    }
+    
+    /* 确保玩家2在小屏幕下也保持功能键在左、方向键在右 */
+    .player2-controls .control-layout {
+        flex-direction: row-reverse;
+    }
+}
+
+/* 游戏结束界面 */
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.game-over-content {
+    text-align: center;
+    color: white;
+    animation: fadeIn 0.5s ease-in;
+}
+
+#winner-text {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.restart-button {
+    padding: 15px 40px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(145deg, #4CAF50, #45a049);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.restart-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+    background: linear-gradient(145deg, #45a049, #4CAF50);
+}
+
+.restart-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 教程页面 */
+#tutorial-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+}
+
+.tutorial-content {
+    width: 33.33%;
+    max-width: 500px;
+    min-width: 350px;
+    max-height: 80vh;
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    border: 3px solid #3498db;
+    border-radius: 20px;
+    padding: 30px;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tutorial-content h2 {
+    color: #3498db;
+    font-size: 28px;
+    margin: 0 0 20px 0;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-section {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+}
+
+.tutorial-section h3 {
+    color: #ecf0f1;
+    font-size: 18px;
+    margin: 0 0 10px 0;
+}
+
+.tutorial-section ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #bdc3c7;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.tutorial-section li {
+    margin-bottom: 8px;
+}
+
+.tutorial-section strong {
+    color: #3498db;
+    font-weight: bold;
+}
+
+.tutorial-close-button {
+    display: block;
+    width: 100%;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(145deg, #27ae60, #2ecc71);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 20px;
+}
+
+.tutorial-close-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6);
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+}
+
+.tutorial-close-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(39, 174, 96, 0.4);
+}
+
+/* 响应式设计 - 游戏结束界面 */
+@media screen and (max-width: 768px) {
+    #winner-text {
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+
+    .restart-button {
+        padding: 12px 30px;
+        font-size: 20px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #winner-text {
+        font-size: 28px;
+        margin-bottom: 15px;
+    }
+
+    .restart-button {
+        padding: 10px 25px;
+        font-size: 18px;
+    }
+}
+
+/* 调试面板 */
+#debug-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 280px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #00ff00;
+    pointer-events: none;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.debug-header {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #00ff00;
+}
+
+.debug-section {
+    margin-bottom: 10px;
+    padding: 5px;
+    background: rgba(0, 255, 0, 0.05);
+    border-radius: 5px;
+}
+
+.debug-section h4 {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+    color: #00ff00;
+}
+
+.debug-info {
+    margin: 3px 0;
+    color: #00ff00;
+}
+
+.debug-info span {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.debug-footer {
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #00ff00;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#debug-fps {
+    color: #00ff00;
+}
+
+#debug-fps.good {
+    color: #00ff00;
+}
+
+#debug-fps.warning {
+    color: #ffff00;
+}
+
+#debug-fps.bad {
+    color: #ff0000;
+}
